@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japanese Vocab Quiz for Genki II 3rd edition</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      width: 90%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #feedback {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Japanese Vocab Quiz</h2>
+
+    <label for="lessonSelect">Choose a Lesson:</label>
+    <select id="lessonSelect">
+      <option value="lesson_0.csv">Lesson 0</option>
+      <option value="lesson_1.csv">Lesson 1</option>
+      <option value="lesson_2.csv">Lesson 2</option>
+      <option value="lesson_3.csv">Lesson 3</option>
+      <option value="lesson_4.csv">Lesson 4</option>
+      <option value="lesson_5.csv">Lesson 5</option>
+	  <option value="lesson_6.csv">Lesson 6</option>
+      <option value="lesson_7.csv">Lesson 7</option>
+      <option value="lesson_8.csv">Lesson 8</option>
+      <option value="lesson_9.csv">Lesson 9</option>
+      <option value="lesson_10.csv">Lesson 10</option>
+	  <option value="lesson_11.csv">Lesson 11</option>
+	  <option value="lesson_12.csv">Lesson 12</option>
+    </select>
+    <button onclick="loadLesson()">Start Quiz</button>
+
+    <div id="quiz" style="display:none;">
+      <p id="question"></p>
+      <input type="text" id="answerInput" placeholder="Type your answer here..." />
+      <button onclick="checkAnswer()">Submit</button>
+      <button onclick="nextQuestion()" style="display:none; background-color: #28a745;">Next</button>
+      <p id="feedback"></p>
+      <p id="score"></p>
+    </div>
+  </div>
+
+  <script>
+    let vocabList = [];
+    let currentIndex = 0;
+    let correct = 0;
+    let total = 0;
+
+    async function loadLesson() {
+      const selectedFile = document.getElementById("lessonSelect").value;
+      const response = await fetch(selectedFile);
+      const text = await response.text();
+      const lines = text.trim().split('\n');
+      vocabList = lines.slice(1).map(line => {
+        const [vocab, kana, english] = line.split(',');
+        return { vocab, kana, english };
+      });
+      shuffle(vocabList);
+      currentIndex = 0;
+      correct = 0;
+      total = 0;
+      document.getElementById("quiz").style.display = "block";
+      showQuestion();
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function showQuestion() {
+      const q = vocabList[currentIndex];
+      // always prompt English → kana
+      document.getElementById("question").textContent =
+      `What is the Japanese word for: ${q.english}`;
+      document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").textContent = "";
+      // hide “Next” and enable Submit
+      document.querySelector("#quiz button:nth-of-type(2)").style.display = "none";
+      document.querySelector("#quiz button:nth-of-type(1)").disabled = false;
+    }
+
+
+    function checkAnswer() {
+      const userInput = document.getElementById("answerInput").value.trim();
+      const q = vocabList[currentIndex];
+      const answer = q.vocab;
+      total++;
+      // Disable submit button to prevent multiple submissions.
+      document.querySelector("#quiz button:nth-of-type(1)").disabled = true;
+      if (userInput === answer) {
+        correct++;
+        document.getElementById("feedback").textContent = "Correct!";
+        document.getElementById("feedback").style.color = "green";
+      } else {
+        document.getElementById("feedback").innerHTML = `Incorrect. Correct answer is: <span style="color:black; font-style:italic;">${answer}</span>`;
+        document.getElementById("feedback").style.color = "red";
+      }
+      document.getElementById("score").textContent = `Score: ${correct} / ${total}`;
+      document.querySelector("#quiz button:nth-of-type(2)").style.display = "block";
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex >= vocabList.length) {
+        shuffle(vocabList);
+        currentIndex = 0;
+      }
+      showQuestion();
+    }
+  </script>
+</body>
+</html>
