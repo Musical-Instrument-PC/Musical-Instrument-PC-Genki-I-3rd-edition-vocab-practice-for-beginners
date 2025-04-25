@@ -94,8 +94,8 @@
       const text = await response.text();
       const lines = text.trim().split('\n');
       vocabList = lines.slice(1).map(line => {
-        const [vocab, kana, english] = line.split(',');
-        return { vocab, kana, english };
+        const [vocab, english] = line.split(',');
+        return { vocab, english };
       });
       shuffle(vocabList);
       currentIndex = 0;
